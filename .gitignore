@@ -1,0 +1,11 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.vscode/
+.env
+yolov8n.pt
+screen_recording_frames/
+*.mp4
+debug_vdo2_first_frame.jpg
+first_frame.png
