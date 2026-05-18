@@ -2,13 +2,14 @@
 
 Streamlit and OpenCV tools for monitoring a hospital reception desk.
 The project detects people with YOLO, counts confirmed receptionists in the
-configured reception zone, and counts unique visitors present outside the
-receptionist/reception area while excluding confirmed staff.
+configured reception zone, and counts visitor entries/exits using two saved
+crossing lines while excluding confirmed staff from visitor counts.
 
 ## Project Files
 
 ```text
-app.py                          <- Main Streamlit receptionist counter
+dual_counter_viewer.py          <- Main Streamlit app for receptionist + entry/exit counts
+app.py                          <- Streamlit reference app for receptionist count workflow
 footfall_counter.py             <- Local OpenCV unique visitor presence counter
 two_line_visitor_counter.py     <- Draw two lines and count Line 1 -> Line 2 entries
 receptionist_count.py           <- Local OpenCV receptionist counter
@@ -16,14 +17,21 @@ requirements.txt                <- Python dependencies
 yolov8n.pt                      <- YOLOv8 model weights
 receptionist_uniform_ref.png    <- Reference image for receptionist uniform
 reception_zone.json             <- Four-point reception desk zone
-visitor_entry_zone.json         <- Four-point visitor entrance zone
+two_line_counter_lines.json     <- Saved Line 1 and Line 2 visitor counter setup
+visitor_entry_zone.json         <- Legacy four-point visitor entrance zone
 ```
 
 ## Local Setup
 
 ```bash
 pip install -r requirements.txt
-streamlit run app.py
+streamlit run dual_counter_viewer.py
+```
+
+If you run Streamlit through Python, include the `run` command:
+
+```bash
+python -m streamlit run dual_counter_viewer.py
 ```
 
 The app opens at:
@@ -64,21 +72,24 @@ python two_line_visitor_counter.py --redraw
 - The torso region is compared with `receptionist_uniform_ref.png`.
 - The neck/upper-chest region is checked for red or pink lanyard pixels.
 - A person must match for multiple frames before being confirmed as receptionist.
-- Visitors are counted only when they are outside the reception/receptionist zone.
-- People inside `reception_zone.json` are excluded from the visitor count.
-- A full-session appearance memory suppresses duplicate visitor counts when the
-  tracker changes IDs.
+- Visitor entries are counted when a non-receptionist track crosses the saved
+  two lines in the selected entry direction.
+- Visitor exits are counted when a non-receptionist track crosses the same two
+  lines in the opposite direction.
+- Confirmed receptionist IDs are excluded from visitor entry/exit counts.
 
 ## Main Metrics
 
 - Receptionists currently at desk
 - Peak receptionists at desk
 - Confirmed receptionist IDs
-- Visitors currently present outside reception area
-- Unique visitors seen outside reception area
+- Visitor entries
+- Visitor exits
 - Frames processed
 
 ## Calibration Files
 
 - Edit `reception_zone.json` when the yellow reception zone is not aligned with the desk.
 - Replace `receptionist_uniform_ref.png` when the uniform color/reference changes.
+- Run `python two_line_visitor_counter.py --redraw` to redraw Line 1 and Line 2
+  when the visitor entry/exit lines are not aligned.
